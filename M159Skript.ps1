@@ -15,25 +15,32 @@ function get-sanitizedUTF8Input {
 
 #Functions End
 
+#Definition of all Variables
 $tables = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADmini.csv" -Delimiter ";"
 
+$user = @()
+$userGroup = @("Gruppenname","Gruppenname2")
+$userOu = @("OuName1","OuName2")
 $username = @()
 $organizationalunits = @{"O_Gertzenstein" = "O_Gertzenstein";"O_Deaktiviert" = "O_Deaktiviert";"O_Diverse" = "O_Diverse";"O_Lehrer" = "O_Lehrer";"O_Schueler" = "O_Schueler";"O_Oberstufe" = "O_Oberstufe";"O_Verwaltung" = "O_Verwaltung"}
 $groups = @{"G_Deaktiviert" = "507";"G_Diverse" = "508";"GL_Gymnasium" = "505";"GL_Handelsmatura" = "506";"GL_Sekundarschule" = "504";"GS_Handelsmatura" = "510";"GS_Matura" = "511";"G_Verwaltung" = "509"}
-
+#End Of Definition of all Variables
 
 
 foreach($x in $tables){
   $vorname = get-sanitizedUTF8Input $x.vorname.ToLower()
   $nachname = get-sanitizedUTF8Input $x.nachname.ToLower()
   $username += $vorname +"."+ $nachname
-  $username
+
 }
- 
-$groups
 
-$organizationalunits
-$username
+# Object for a user with the necessary properties of this User
+$userobject = new-object PSObject -Property @{
+    username = $username;
+    ou = $userOu;
+    group = $userGroup;
+       
+    }
 
-#$username = $table[1].vorname +"."+ $table[1].nachname
-#contains for more shit
+$user += $userobject
+$user
