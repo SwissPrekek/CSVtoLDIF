@@ -36,7 +36,7 @@ foreach($x in $tables){
 
 #OrganizationUnit generation
 foreach($x in $tables){
-    if ($x.Beschreibung -match "Sekundar" -And !$x.Beschreibung -match "Lehrer") {
+    if ($x.Beschreibung -match "Sekundar" -And !($x.Beschreibung -match "Lehrer")) {
     $userOu = "O_Schueler"
 }
  else{
