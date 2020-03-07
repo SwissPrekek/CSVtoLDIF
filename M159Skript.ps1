@@ -18,13 +18,21 @@ function get-sanitizedUTF8Input {
 $tables = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADmini.csv" -Delimiter ";"
 
 $username = @()
+$organizationalunits = @{"O_Gertzenstein" = "O_Gertzenstein";"O_Deaktiviert" = "O_Deaktiviert";"O_Diverse" = "O_Diverse";"O_Lehrer" = "O_Lehrer";"O_Schueler" = "O_Schueler";"O_Oberstufe" = "O_Oberstufe";"O_Verwaltung" = "O_Verwaltung"}
+$groups = @{"G_Deaktiviert" = "507";"G_Diverse" = "508";"GL_Gymnasium" = "505";"GL_Handelsmatura" = "506";"GL_Sekundarschule" = "504";"GS_Handelsmatura" = "510";"GS_Matura" = "511";"G_Verwaltung" = "509"}
+
+
 
 foreach($x in $tables){
-  $vorname = get-sanitizedUTF8Input $x.vorname
-  $nachname = get-sanitizedUTF8Input $x.nachname
+  $vorname = get-sanitizedUTF8Input $x.vorname.ToLower()
+  $nachname = get-sanitizedUTF8Input $x.nachname.ToLower()
   $username += $vorname +"."+ $nachname
+  $username
 }
+ 
+$groups
 
+$organizationalunits
 $username
 
 #$username = $table[1].vorname +"."+ $table[1].nachname
