@@ -16,9 +16,9 @@ function get-sanitizedUTF8Input {
 #Functions End
 
 #Definition of all Variables
-$tables = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADMini.csv" -Delimiter ";"
+$tables = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADmini.csv" -Delimiter ";"
 
-$user = @()
+
 $uservorname = @()
 $usernachname = @()
 $userGroup = @()
@@ -94,8 +94,39 @@ $userobject = new-object PSObject -Property @{
     group    = $userGroup;
        
 }
-$user += New-Object PSObject -Property $userobject
-$user | Export-Csv -Path J:\1_Bibliothek\School\Modul159\Git\CSVtoLDIF\ehren.csv -Delimiter ';' 
+
+$i=0
+$uidvar=1000
+while ($i -lt $userobject.vorname.length){
+<#   
+   $userobject.vorname[$i]
+   $userobject.nachname[$i]
+   $userobject.username[$i]
+   $userobject.ou[$i]
+   $userobject.group[$i]
+   #>
+
+
+"dn: uid="+$userobject.username[$i]+",ou="+$userobject.ou[$i]+",dc=prekek,dc=com"
+"changetype: add"
+"objectClass: inetOrgPerson"
+"objectClass: organizationalPerson"
+"objectClass: posixAccount"
+"objectClass: top"
+"gidnumber: "+$userobject.group[$i]
+"cn: "+$userobject.vorname[$i]+" "+$userobject.nachname[$i]
+"sn: "+$userobject.nachname[$i]
+"uid: "+$userobject.username[$i]
+"mail: "+$userobject.username[$i]+"@prekek.com"
+"uidnumber: "+$uidvar++
+"userPassword: leer" 
+"`n"
+
+   $i++
+
+}
+
+
 
 <#
 foreach ($x in $userobject.username ){
