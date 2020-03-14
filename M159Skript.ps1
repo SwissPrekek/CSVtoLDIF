@@ -11,136 +11,95 @@ function get-sanitizedUTF8Input {
     $inputString = $inputString -replace '[^a-zA-Z0-9]', ''
     return $inputString
 }
-
-
 #Functions End
 
-#Definition of all Variables
-$tables = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADmini.csv" -Delimiter ";"
+$list = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADExportALL.csv" -Delimiter ";"
+$userDAO = @()
+$groups = @{"G_Deaktiviert" = "507"; "G_Diverse" = "508"; "GL_Gymnasium" = "505"; "GL_Handelsmatura" = "506"; "GL_Sekundarschule" = "504"; "GS_Sekundarschule" = "500"; "GS_Handelsmatura" = "510"; "GS_Matura" = "511"; "G_Verwaltung" = "509"; "GS_Oberstufe" = "501" }
 
 
-$uservorname = @()
-$usernachname = @()
-$userGroup = @()
-$userOu = @()
-$username = @()
-#$organizationalunits = @{"O_Gertzenstein" = "O_Gertzenstein"; "O_Deaktiviert" = "O_Deaktiviert"; "O_Diverse" = "O_Diverse"; "O_Lehrer" = "O_Lehrer"; "O_Schueler" = "O_Schueler"; "O_Oberstufe" = "O_Oberstufe"; "O_Verwaltung" = "O_Verwaltung" }
-$groups = @{"G_Deaktiviert" = "507"; "G_Diverse" = "508"; "GL_Gymnasium" = "505"; "GL_Handelsmatura" = "506"; "GL_Sekundarschule" = "504"; "GS_Sekundarschule" = "504"; "GS_Handelsmatura" = "510"; "GS_Matura" = "511"; "G_Verwaltung" = "509" }
-#End Of Definition of all Variables
+foreach ($row in $list) {
+    $vorname = get-sanitizedUTF8Input $row.Vorname.ToLower();
+    $nachname = get-sanitizedUTF8Input $row.Nachname.ToLower();
+    $ou = "DefaultOU"
+    $group = "DefaultGroup"
 
-#Username generation
-foreach ($x in $tables) {
-    $vorname = get-sanitizedUTF8Input $x.vorname.ToLower()
-    $nachname = get-sanitizedUTF8Input $x.nachname.ToLower()
-    $username += $vorname + "." + $nachname
-    $uservorname += $vorname
-    $usernachname += $nachname
-
-}
-
-#OrganizationUnit and Group generation
-foreach ($x in $tables) {
-    if (!($x.Beschreibung -match "Lehrer") -and !($x.Beschreibung -match "Verwaltung") -and !($x.Beschreibung -match "deaktiviert")) {
-        $userOu += "O_Schueler"
-        if ($x.Beschreibung -match "Sekundar") {
-            $userGroup += $groups.GS_Sekundarschule
+    if (!($row.Beschreibung -match "Lehrer") -and !($row.Beschreibung -match "Verwaltung") -and !($row.Beschreibung -match "deaktiviert")) {
+        $ou = "O_Schueler"
+        if ($row.Beschreibung -match "Sekundar") {
+            $group = $groups.GS_Sekundarschule
         }
 
-        elseif ($x.Beschreibung -match "Handelsmatur") {
-            $userGroup += $groups.GS_Handelsmatura
+
+        elseif ($row.Beschreibung -match "Handelsmatur") {
+            $group = $groups.GS_Handelsmatura
         }
 
-        elseif ($x.Beschreibung -match "Matur") {
-            $userGroup += $groups.GS_Matura
+        elseif ($row.Beschreibung -match "Matur") {
+            $group = $groups.GS_Matura
         }
+
+        elseif ($row.Beschreibung -match "Oberstufe") {
+            $group = $groups.GS_Oberstufe
+        }
+
 
     }
 
-    elseif ($x.Beschreibung -match "Lehrer") {
-        $userOu += "O_Lehrer"
+    elseif ($row.Beschreibung -match "Lehrer") {
+        $ou = "O_Lehrer"
 
-        if ($x.Beschreibung -match "Sekundar") {
-            $userGroup += $groups.GL_Sekundarschule
+        if ($row.Beschreibung -match "Sekundar") {
+            $group = $groups.GL_Sekundarschule
         }
-        elseif ($x.Beschreibung -match "Gym") {
-            $userGroup += $groups.GL_Gymnasium
+        elseif ($row.Beschreibung -match "Gym") {
+            $group = $groups.GL_Gymnasium
         }
-        elseif ($x.Beschreibung -match "Handel") {
-            $userGroup += $groups.GL_Handelsmatura
+        elseif ($row.Beschreibung -match "Handel") {
+            $group = $groups.GL_Handelsmatura
         }
+
 
     }
 
-    elseif ($x.Beschreibung -match "Verwaltung") {
-        $userOu += "O_Verwaltung"
-        $userGroup += $groups.G_Verwaltung
+    elseif ($row.Beschreibung -match "Verwaltung") {
+        $ou = "O_Verwaltung"
+        $group = $groups.G_Verwaltung
         
     }
-    elseif ($x.Beschreibung -match "deaktiviert") {
-        $userOu += "O_Deaktiviert"
-        $userGroup += $groups.G_Deaktiviert
+    elseif ($row.Beschreibung -match "deaktiviert") {
+        $ou = "O_Deaktiviert"
+        $group = $groups.G_Deaktiviert
     }
-    else {
-        $userOu = "empty"
-    } 
+
+
+    $userDAO += new-object PSObject -Property @{
+        vorname  = $vorname
+        nachname = $nachname
+        username = $vorname + "." + $nachname
+        ou       = $ou;
+        group    = $group;
+           
+    }
 }
 
-# Object for a user with the necessary properties of this User
-$userobject = new-object PSObject -Property @{
-    vorname  = $uservorname;
-    nachname = $usernachname;
-    username = $username;
-    ou       = $userOu;
-    group    = $userGroup;
-       
+$uidvar = 1000
+
+foreach ($ldifentry in $userDAO) {
+    
+
+    "dn: uid=" + $ldifentry.username + ",ou=" + $ldifentry.ou + ",dc=prekek,dc=com"
+    "changetype: add"
+    "objectClass: inetOrgPerson"
+    "objectClass: organizationalPerson"
+    "objectClass: posixAccount"
+    "objectClass: top"
+    "gidnumber: " + $ldifentry.group
+    "cn: " + $ldifentry.vorname + " " + $ldifentry.nachname
+    "sn: " + $ldifentry.nachname
+    "uid: " + $ldifentry.username
+    "mail: " + $ldifentry.username + "@prekek.com"
+    "uidnumber: " + $uidvar++
+    "userPassword: leer" 
+    "`n"
 }
-
-$i=0
-$uidvar=1000
-while ($i -lt $userobject.vorname.length){
-<#   
-   $userobject.vorname[$i]
-   $userobject.nachname[$i]
-   $userobject.username[$i]
-   $userobject.ou[$i]
-   $userobject.group[$i]
-   #>
-
-
-"dn: uid="+$userobject.username[$i]+",ou="+$userobject.ou[$i]+",dc=prekek,dc=com"
-"changetype: add"
-"objectClass: inetOrgPerson"
-"objectClass: organizationalPerson"
-"objectClass: posixAccount"
-"objectClass: top"
-"gidnumber: "+$userobject.group[$i]
-"cn: "+$userobject.vorname[$i]+" "+$userobject.nachname[$i]
-"sn: "+$userobject.nachname[$i]
-"uid: "+$userobject.username[$i]
-"mail: "+$userobject.username[$i]+"@prekek.com"
-"uidnumber: "+$uidvar++
-"userPassword: leer" 
-"`n"
-
-   $i++
-
-}
-
-
-
-<#
-foreach ($x in $userobject.username ){
-Write-Host "Benutzername: " $x
-
-}
-
-foreach ($x in $userobject.ou ){
-Write-Host "Organisationseinheit: " $x
-
-}
-foreach ($x in $userobject.group ){
-Write-Host "Gruppe: " $x
-
-}
-#>
-
