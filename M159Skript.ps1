@@ -24,7 +24,7 @@ foreach ($row in $list) {
     $ou = "DefaultOU"
     $group = "DefaultGroup"
 
-    if (!($row.Beschreibung -match "Lehrer") -and !($row.Beschreibung -match "Verwaltung") -and !($row.Beschreibung -match "deaktiviert")) {
+    if (!($row.Beschreibung -match "Lehrer") -and !($row.Beschreibung -match "Verwaltung") -and !($row.Beschreibung -match "deaktiviert") -and !($row.Beschreibung -match "Leitung")) {
         $ou = "O_Schueler"
         if ($row.Beschreibung -match "Sekundar") {
             $group = $groups.GS_Sekundarschule
@@ -67,6 +67,12 @@ foreach ($row in $list) {
         $group = $groups.G_Verwaltung
         
     }
+    elseif ($row.Beschreibung -match "Leitung") {
+        $ou = "O_Verwaltung"
+        $group = $groups.G_Verwaltung
+        
+    }
+
     elseif ($row.Beschreibung -match "deaktiviert") {
         $ou = "O_Deaktiviert"
         $group = $groups.G_Deaktiviert
@@ -88,16 +94,18 @@ $uidvar = 1000
 foreach ($ldifentry in $userDAO) {
     
 
-    "dn: uid=" + $ldifentry.username + ",ou=" + $ldifentry.ou + ",dc=prekek,dc=com"
+    "dn: uid=" + $ldifentry.username + ",ou=" + $ldifentry.ou + ",ou=O_Gertenztein" + ",dc=prekek,dc=com"
     "changetype: add"
     "objectClass: inetOrgPerson"
     "objectClass: organizationalPerson"
     "objectClass: posixAccount"
     "objectClass: top"
+    "loginShell: /bin/bash"
     "gidnumber: " + $ldifentry.group
     "cn: " + $ldifentry.vorname + " " + $ldifentry.nachname
     "sn: " + $ldifentry.nachname
     "uid: " + $ldifentry.username
+    "homeDirectory: /home/users/" + $ldifentry.username
     "mail: " + $ldifentry.username + "@prekek.com"
     "uidnumber: " + $uidvar++
     "userPassword: leer" 
