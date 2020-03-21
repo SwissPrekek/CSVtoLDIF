@@ -15,7 +15,7 @@ function get-sanitizedUTF8Input {
 
 $list = Import-Csv -Path "J:\1_Bibliothek\School\Modul159\ADExportALL.csv" -Delimiter ";"
 $userDAO = @()
-$groups = @{"G_Deaktiviert" = "507"; "G_Diverse" = "508"; "GL_Gymnasium" = "505"; "GL_Handelsmatura" = "506"; "GL_Sekundarschule" = "504"; "GS_Sekundarschule" = "500"; "GS_Handelsmatura" = "510"; "GS_Matura" = "511"; "G_Verwaltung" = "509"; "GS_Oberstufe" = "501" }
+$groups = @{"G_Deaktiviert" = "501"; "G_Diverse" = "500"; "GL_Gymnasium" = "507"; "GL_Handelsmatura" = "508"; "GL_Sekundarschule" = "506"; "GS_Sekundarschule" = "502"; "GS_Handelsmatura" = "505"; "GS_Matura" = "504"; "G_Verwaltung" = "509"; "GS_Oberstufe" = "503" }
 
 
 foreach ($row in $list) {
@@ -94,7 +94,7 @@ $uidvar = 1000
 foreach ($ldifentry in $userDAO) {
     
 
-    "dn: uid=" + $ldifentry.username + ",ou=" + $ldifentry.ou + ",ou=O_Gertenztein" + ",dc=prekek,dc=com"
+    "dn: uid=" + $ldifentry.username + ",ou=" + $ldifentry.ou + ",ou=O_Gertzenstein" + ",dc=gertzenstein,dc=local"
     "changetype: add"
     "objectClass: inetOrgPerson"
     "objectClass: organizationalPerson"
@@ -106,7 +106,7 @@ foreach ($ldifentry in $userDAO) {
     "sn: " + $ldifentry.nachname
     "uid: " + $ldifentry.username
     "homeDirectory: /home/users/" + $ldifentry.username
-    "mail: " + $ldifentry.username + "@prekek.com"
+    "mail: " + $ldifentry.username + "@gertzenstein.local"
     "uidnumber: " + $uidvar++
     "userPassword: leer" 
     "`n"
