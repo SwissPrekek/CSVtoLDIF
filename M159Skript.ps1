@@ -103,6 +103,7 @@ foreach ($ldifentry in $userDAO) {
     "loginShell: /bin/bash"
     "gidnumber: " + $ldifentry.group
     "cn: " + $ldifentry.vorname + " " + $ldifentry.nachname
+    "gn: " + $ldifentry.vorname
     "sn: " + $ldifentry.nachname
     "uid: " + $ldifentry.username
     "homeDirectory: /home/users/" + $ldifentry.username
